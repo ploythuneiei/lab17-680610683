@@ -24,6 +24,9 @@ export default function HomePage() {
           </div>
         </CardContent>
       </Card>
+      <footer className="p-2 text-center text-xs text-muted-foreground">
+        จัดทำโดย ธัลวรัตน์ ศรีจันทร์ดร 680610683
+      </footer>
     </div>
   );
 }
