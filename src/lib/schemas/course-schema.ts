@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Course } from "@/lib/types";
 
 export const MAX_EMAILS = 3;
-export const MAX_DESCRIPTIONS = 100;
+export const MAX_DESCRIPTION = 100;
 export const MAX_INSTRUCTORS = 3;
 
 export const courseFormSchema = z.object({
@@ -46,7 +46,7 @@ export const courseFormSchema = z.object({
 
     semester: z.enum(["1", "2", "3"], { message: "เลือกภาคการศึกษา" }),
 
-    description: z.string().max(MAX_DESCRIPTIONS, `รายละเอียดยาวได้ไม่เกิน ${MAX_DESCRIPTIONS} ตัวอักษร`),
+    description: z.string().max(MAX_DESCRIPTION, `รายละเอียดยาวได้ไม่เกิน ${MAX_DESCRIPTION} ตัวอักษร`),
 
     notifyByEmail: z.boolean(),
 });
