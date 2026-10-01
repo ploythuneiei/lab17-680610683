@@ -45,7 +45,7 @@ import {
   createCourseFormSchema,
   MAX_DESCRIPTION,
   MAX_INSTRUCTORS,
-  type CouresFormValues,
+  type CourseFormValues,
 } from "@/lib/schemas/course-schema";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +61,7 @@ const semesterOptions = [
 ];
 
 // ค่าเริ่มต้น: ผู้สอนว่าง 1 แถว, switch ปิด, program/semester ยังไม่เลือก
-const emptyCourseForm: DefaultValues<CouresFormValues> = {
+const emptyCourseForm: DefaultValues<CourseFormValues> = {
   courseId: "",
   courseTitle: "",
   program: undefined,
@@ -79,7 +79,7 @@ export function AddNewCourseDialog() {
   // สร้าง schema ใหม่เมื่อ courses เปลี่ยน เพื่อให้ .refine() กันรหัสซ้ำเห็นข้อมูลล่าสุด
   const schema = useMemo(() => createCourseFormSchema(courses), [courses]);
 
-  const form = useForm<CouresFormValues>({
+  const form = useForm<CourseFormValues>({
     resolver: zodResolver(schema),
     defaultValues: emptyCourseForm,
     mode: "onBlur",
@@ -102,7 +102,7 @@ export function AddNewCourseDialog() {
   const resetForm = () => form.reset(emptyCourseForm);
 
   // ถูกเรียกเฉพาะเมื่อผ่าน schema แล้ว: ค่าถูก trim และ program/semester มี type ถูกต้อง
-  function onSubmit(values: CouresFormValues) {
+  function onSubmit(values: CourseFormValues) {
     addCourse(values);
     resetForm();
     setOpen(false); // บันทึกสำเร็จ → ปิดฟอร์ม (ข้อ 4.2)

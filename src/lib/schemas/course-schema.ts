@@ -2,13 +2,13 @@ import { z } from "zod";
 
 import type { Course } from "@/lib/types";
 
-export const MAX_EMAILS = 3;
 export const MAX_DESCRIPTION = 100;
 export const MAX_INSTRUCTORS = 3;
 
 export const courseFormSchema = z.object({
     courseId: z
         .string()
+        .trim()
         .regex(/^\d{6}$/, "รหัสวิชาต้องเป็นตัวเลข 6 หลัก"),
 
     courseTitle: z
@@ -52,15 +52,38 @@ export const courseFormSchema = z.object({
 });
 
 // ได้ type จาก schema ตรงๆ — ไม่ต้องประกาศ StudentFormValues ซ้ำเอง
-export type CouresFormValues = z.infer<typeof courseFormSchema>;
+export type CourseFormValues = z.infer<typeof courseFormSchema>;
 
 /**
  * กันรหัสซ้ำด้วย .refine()
  * ต้องสร้าง "ข้างใน" component (ผ่าน useMemo) เพราะต้องรู้ students ล่าสุดจาก store
  */
 export function createCourseFormSchema(existingCourses: Course[]) {
-    return courseFormSchema.refine(
-        (data) => !existingCourses.some((s) => s.courseId === data.courseId),
-        { message: "รหัสวิชานี้มีอยู่แล้ว", path: ["courseId"] },
-    );
+    return courseFormSchema.extend({
+        courseId: courseFormSchema.shape.courseId.refine(
+            (id) => !existingCourses.some((c) => c.courseId === id),
+            "รหัสวิชานี้มีอยู่แล้ว",
+        ),
+    });
 }
+
+// .extend({ ...}) คือ สร้าง schema ใหม่โดยคัดลอกของเดิมทั้งหมด
+// แล้วทับเฉพาะ key ที่ระบุ ในวงเล็บ ในที่นี้ทับแค่ courseId ช่องอื่น(courseTitle, instructors, program ฯลฯ) คงเดิม
+
+// .extend ไม่แก้ courseFormSchema ต้นฉบับ แต่สร้างตัวใหม่ให้
+//courseFormSchema.shape.courseId
+
+// .shape คือ object ที่เก็บ schema ของแต่ละช่องไว้ข้างใน
+//     .shape.courseId จึงเป็นกฎเดิมของรหัสวิชา คือ z.string().trim().regex(/^\d{6}$/, ...)
+// เราหยิบกฎเดิมมา แล้วต่อกฎใหม่ท้ายมัน ไม่ต้องเขียน regex ซ้ำ
+
+//.refine(ฟังก์ชันตรวจ, ข้อความ error)
+// .refine คือการเพิ่มกฎแบบกำหนดเองต่อท้าย รับ 2 อย่าง คือฟังก์ชันที่คืน true(ผ่าน) หรือ false(ไม่ผ่าน) กับข้อความที่จะแสดงเมื่อไม่ผ่าน
+// กฎนี้จะทำงานต่อจาก regex ถ้ารหัสไม่ใช่ตัวเลข 6 หลัก จะขึ้น "รหัสวิชาต้องเป็นตัวเลข 6 หลัก" ก่อน และถ้าผ่านแล้วค่อยเช็คว่าซ้ำไหม
+//     (id) => !existingCourses.some((c) => c.courseId === id)
+// อ่านจากในออกนอก:
+
+// (id) => คือฟังก์ชันที่รับค่าที่ผู้ใช้กรอก(หลัง trim แล้ว) ชื่อ id
+// c.courseId === id เทียบว่าวิชา c ตัวหนึ่งมีรหัสตรงกับที่กรอกไหม
+//     .some(...) คือถามว่ามี อย่างน้อยหนึ่งวิชา ในรายการที่ตรงเงื่อนไขไหม ได้ true ถ้ามีที่ซ้ำ
+// !คือกลับค่า ซ้ำ(true) กลายเป็น false = ไม่ผ่าน ไม่ซ้ำ(false) กลายเป็น true = ผ่าน
